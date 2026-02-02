@@ -201,37 +201,44 @@ app.delete('/api/guardias/:id', async (req, res) => {
   }
 });
 
-/* ============================
-   LOGIN
-============================ */
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const userResult = await pool.query(
-      'SELECT * FROM usuarios WHERE correo_electronico = $1',
+    const result = await pool.query(
+      'SELECT * FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
       [email]
     );
 
-    if (userResult.rows.length > 0) {
-      const user = userResult.rows[0];
-      const match = await bcrypt.compare(password, user.contrasena_hash);
-
-      if (match) {
-        return res.json({
-          success: true,
-          nombre: user.nombre_usuario,
-          rol: user.rol
-        });
-      }
+    if (result.rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales incorrectas'
+      });
     }
 
-    res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
+    const user = result.rows[0];
+    const match = await bcrypt.compare(password, user.contrasena_hash);
 
-  } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    if (!match) {
+      return res.status(401).json({
+        success: false,
+        message: 'Credenciales incorrectas'
+      });
+    }
+
+    res.json({
+      success: true,
+      nombre: user.nombre_usuario,
+      rol: user.rol
+    });
+
+  } catch (error) {
+    console.error('LOGIN ERROR:', error);
+    res.status(500).json({ success: false, error: 'Error del servidor' });
   }
 });
+
 
 /* ============================
    SERVER
