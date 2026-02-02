@@ -36,21 +36,20 @@ const FormularioRegistro = () => {
   });
 
   /* ============================
-     CARGAR DATOS PARA EDICIÓN
+      CARGAR DATOS PARA EDICIÓN
   ============================ */
   useEffect(() => {
     if (esEdicion) {
       fetch(`/api/guardias/${id}`)
         .then(res => res.json())
         .then(data => {
+          // Esto asegura que al editar, el formulario se llene con lo que hay en la DB
           setFormData({
             ...data,
-            correo_electronico: data.correo_electronico || '',
-            telf_familiar: data.telf_familiar || '',
-            parentesco: data.parentesco || '',
-            direccion_trabajo: data.direccion_trabajo || '',
+            // Aseguramos que los números no vengan como strings
             abono_1: Number(data.abono_1) || 0,
-            abono_2: Number(data.abono_2) || 0
+            abono_2: Number(data.abono_2) || 0,
+            edad: data.edad || ''
           });
         })
         .catch(err => console.error('Error al cargar ficha:', err));
@@ -58,7 +57,7 @@ const FormularioRegistro = () => {
   }, [id, esEdicion]);
 
   /* ============================
-     CÁLCULO DE COSTOS
+      CÁLCULO DE COSTOS
   ============================ */
   const calcularPrecios = () => {
     let total = 120;
@@ -73,37 +72,25 @@ const FormularioRegistro = () => {
   const { total, saldo } = calcularPrecios();
 
   /* ============================
-     MANEJO DE INPUTS
+      MANEJO DE INPUTS
   ============================ */
   const handleChange = (e) => {
     const { name, type, checked, value } = e.target;
-
-    if (name === 'libreta_militar_si') {
-      setFormData(prev => ({ ...prev, libreta_militar: true }));
-    } else if (name === 'libreta_militar_no') {
-      setFormData(prev => ({ ...prev, libreta_militar: false }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: type === 'checkbox' ? checked : value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
   /* ============================
-     GUARDAR / ACTUALIZAR
+      GUARDAR / ACTUALIZAR
   ============================ */
   const handleGuardar = async (e) => {
     e.preventDefault();
-
     const datosFinales = { ...formData, saldo };
 
-    const url = esEdicion
-      ? `/api/guardias/${id}`
-      : `/api/registro`;
-
     try {
-      const resp = await fetch(url, {
+      const resp = await fetch(esEdicion ? `/api/guardias/${id}` : `/api/registro`, {
         method: esEdicion ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(datosFinales)
@@ -111,13 +98,13 @@ const FormularioRegistro = () => {
 
       if (!resp.ok) throw new Error('Error al guardar');
 
-      alert(esEdicion ? 'DATOS ACTUALIZADOS' : 'REGISTRO GUARDADO');
+      alert(esEdicion ? 'DATOS ACTUALIZADOS CORRECTAMENTE' : 'REGISTRO GUARDADO CON ÉXITO');
       imprimirFichaInscripcion(datosFinales);
       navigate('/admin/pagos');
 
     } catch (error) {
       console.error(error);
-      alert('Error al guardar los datos');
+      alert('Error al procesar la solicitud');
     }
   };
 
@@ -125,12 +112,12 @@ const FormularioRegistro = () => {
     <div className="form-registro-container">
       <div className="form-card">
         <h2 className="form-title">
-          {esEdicion ? 'EDITAR FICHA COMPLETA' : 'NUEVA FICHA DE INSCRIPCIÓN'}
+          {esEdicion ? 'MODIFICAR EXPEDIENTE DE GUARDIA' : 'NUEVA FICHA DE INSCRIPCIÓN'}
         </h2>
 
         <form onSubmit={handleGuardar} className="ficha-grid-layout">
 
-          {/* SECCIÓN 1 */}
+          {/* SECCIÓN 1: CAPACITACIÓN */}
           <div className="form-section">
             <div className="form-section-header">1. NIVELES DE CAPACITACIÓN</div>
             <div className="checkbox-group-row">
@@ -141,23 +128,64 @@ const FormularioRegistro = () => {
             </div>
           </div>
 
-          {/* SECCIÓN 2 */}
+          {/* SECCIÓN 2: DATOS PERSONALES */}
           <div className="form-section">
-            <div className="form-section-header">2. DATOS PERSONALES</div>
-            <div className="form-grid-2">
+            <div className="form-section-header">2. INFORMACIÓN DEL POSTULANTE</div>
+            <div className="form-grid-3">
               <input name="apellidos_nombres" value={formData.apellidos_nombres} onChange={handleChange} placeholder="Apellidos y Nombres" required />
-              <input name="cedula" value={formData.cedula} onChange={handleChange} placeholder="Cédula" required maxLength="10" />
+              <input name="cedula" value={formData.cedula} onChange={handleChange} placeholder="Cédula de Identidad" required maxLength="10" />
+              <input name="edad" type="number" value={formData.edad} onChange={handleChange} placeholder="Edad" />
+              <input name="tipo_sangre" value={formData.tipo_sangre} onChange={handleChange} placeholder="Tipo de Sangre" />
+              <input name="correo_electronico" type="email" value={formData.correo_electronico} onChange={handleChange} placeholder="Correo Electrónico" />
+              <input name="nivel_academico" value={formData.nivel_academico} onChange={handleChange} placeholder="Instrucción Académica" />
             </div>
           </div>
 
-          {/* SECCIÓN 5 */}
+          {/* SECCIÓN 3: CONTACTO Y DOMICILIO */}
+          <div className="form-section">
+            <div className="form-section-header">3. DOMICILIO Y CONTACTO</div>
+            <div className="form-grid-3">
+              <input name="provincia" value={formData.provincia} onChange={handleChange} placeholder="Provincia" />
+              <input name="canton" value={formData.canton} onChange={handleChange} placeholder="Cantón" />
+              <input name="ciudad" value={formData.ciudad} onChange={handleChange} placeholder="Ciudad/Parroquia" />
+              <input name="direccion_domicilio" value={formData.direccion_domicilio} onChange={handleChange} placeholder="Dirección Exacta Domicilio" className="span-2" />
+              <input name="celular" value={formData.celular} onChange={handleChange} placeholder="Celular" />
+              <input name="telf_convencional" value={formData.telf_convencional} onChange={handleChange} placeholder="Telf. Convencional" />
+              <input name="telf_familiar" value={formData.telf_familiar} onChange={handleChange} placeholder="Telf. Emergencia" />
+              <input name="parentesco" value={formData.parentesco} onChange={handleChange} placeholder="Parentesco Emergencia" />
+            </div>
+          </div>
+
+          {/* SECCIÓN 4: LABORAL Y MILITAR */}
+          <div className="form-section">
+            <div className="form-section-header">4. DATOS COMPLEMENTARIOS</div>
+            <div className="form-grid-2">
+              <input name="lugar_trabajo" value={formData.lugar_trabajo} onChange={handleChange} placeholder="Empresa/Lugar de Trabajo" />
+              <input name="direccion_trabajo" value={formData.direccion_trabajo} onChange={handleChange} placeholder="Dirección de Trabajo" />
+              <label className="checkbox-label">
+                <input type="checkbox" name="libreta_militar" checked={formData.libreta_militar} onChange={handleChange} /> ¿Posee Libreta Militar?
+              </label>
+            </div>
+          </div>
+
+          {/* SECCIÓN 5: FINANZAS */}
+          <div className="form-section">
+            <div className="form-section-header">5. CONTROL FINANCIERO</div>
+            <div className="form-grid-3">
+              <input name="num_documento" value={formData.num_documento} onChange={handleChange} placeholder="N° de Factura/Recibo" />
+              <input name="abono_1" type="number" step="0.01" value={formData.abono_1} onChange={handleChange} placeholder="Primer Abono $" />
+              <input name="abono_2" type="number" step="0.01" value={formData.abono_2} onChange={handleChange} placeholder="Segundo Abono $" />
+            </div>
+          </div>
+
+          {/* BANNER DE SALDOS */}
           <div className="saldo-banner-container">
-            <span className="total-label-red">COSTO TOTAL: ${total}</span>
-            <span className="saldo-monto-big">SALDO PENDIENTE: ${saldo.toFixed(2)}</span>
+            <span className="total-label-red">INVERSIÓN TOTAL: ${total}</span>
+            <span className="saldo-monto-big">SALDO POR PAGAR: ${saldo.toFixed(2)}</span>
           </div>
 
           <button type="submit" className="btn-guardar-principal">
-            {esEdicion ? 'ACTUALIZAR DATOS' : 'GUARDAR REGISTRO Y GENERAR FICHA PDF'}
+            {esEdicion ? 'GUARDAR CAMBIOS EN FICHA' : 'REGISTRAR Y GENERAR COMPROBANTE PDF'}
           </button>
 
         </form>
