@@ -201,9 +201,23 @@ app.delete('/api/guardias/:id', async (req, res) => {
   }
 });
 
+/* ============================
+    LOGIN DE USUARIOS
+============================ */
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  
+  // .trim() elimina espacios accidentales al inicio o final
+  const cleanEmail = email.trim();
+  const cleanPassword = password.trim();
 
+  const response = await fetch('/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
+  });
   try {
     const result = await pool.query(
       'SELECT * FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
