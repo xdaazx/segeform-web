@@ -2,42 +2,48 @@ import { useState, useEffect, useCallback } from 'react';
 import { Search, FileText, Edit, Trash2, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { imprimirFichaInscripcion } from '../../utils/pdfGenerator';
-import * as XLSX from 'xlsx'; 
+import * as XLSX from 'xlsx';
 import '../../App.css';
 
 const TablaGuardias = () => {
   const [guardias, setGuardias] = useState([]);
   const [busqueda, setBusqueda] = useState('');
-  const [filtroNivel, setFiltroNivel] = useState('todos'); 
+  const [filtroNivel, setFiltroNivel] = useState('todos');
   const navigate = useNavigate();
 
-// Función para cargar datos desde el servidor (Ruta Relativa para Producción)
+  /* ============================
+     CARGAR DATOS
+  ============================ */
   const cargarDatos = useCallback(async () => {
     try {
-      // Eliminamos 'http://localhost:5000' para que Vercel use su propia URL
-      const resp = await fetch('/api/guardias'); 
+      const resp = await fetch('/api/guardias');
       const data = await resp.json();
       setGuardias(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Error al cargar datos desde la nube', err);
+      console.error('Error al cargar datos', err);
     }
   }, []);
 
-  useEffect(() => { 
-    cargarDatos(); 
+  useEffect(() => {
+    cargarDatos();
   }, [cargarDatos]);
 
-  // Lógica de filtrado por niveles (un guardia puede estar en varios niveles)
+  /* ============================
+     FILTROS
+  ============================ */
   const filtrados = guardias.filter(g => {
     const texto = busqueda.toLowerCase();
-    const coincideBusqueda = (g.cedula || '').includes(busqueda) || 
-                             (g.apellidos_nombres || '').toLowerCase().includes(texto);
+    const coincideBusqueda =
+      (g.cedula || '').includes(busqueda) ||
+      (g.apellidos_nombres || '').toLowerCase().includes(texto);
 
     if (filtroNivel === 'todos') return coincideBusqueda;
     return coincideBusqueda && g[filtroNivel] === true;
   });
 
-  // Exportar Excel (Botón verde superior)
+  /* ============================
+     EXPORTAR EXCEL
+  ============================ */
   const exportarExcel = () => {
     const dataParaExcel = filtrados.map(g => ({
       Cédula: g.cedula,
@@ -46,22 +52,37 @@ const TablaGuardias = () => {
       Reentrenamiento: g.reentrenamiento ? 'SÍ' : 'NO',
       Saldo: `$${Number(g.saldo).toFixed(2)}`
     }));
+
     const worksheet = XLSX.utils.json_to_sheet(dataParaExcel);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Guardias");
-    XLSX.writeFile(workbook, `Reporte_Excel_${filtroNivel}.xlsx`);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Guardias');
+    XLSX.writeFile(workbook, `Reporte_Guardias_${filtroNivel}.xlsx`);
   };
 
+  /* ============================
+     ELIMINAR
+  ============================ */
   const eliminar = async (id, nombre) => {
     if (!window.confirm(`¿Seguro que deseas eliminar a ${nombre}?`)) return;
+
     try {
-      const resp = await fetch(`http://localhost:5000/api/guardias/${id}`, { method: 'DELETE' });
-      if (resp.ok) { alert('Registro eliminado'); cargarDatos(); }
-    } catch (err) { console.error(err); }
+      const resp = await fetch(`/api/guardias/${id}`, {
+        method: 'DELETE'
+      });
+
+      if (!resp.ok) throw new Error('Error al eliminar');
+
+      alert('Registro eliminado correctamente');
+      cargarDatos();
+    } catch (err) {
+      console.error(err);
+      alert('No se pudo eliminar el registro');
+    }
   };
 
   return (
     <div className="tabla-pagos-container">
+
       <div className="tabla-actions-header">
         <div className="search-wrapper">
           <Search size={20} className="search-icon-svg" />
@@ -77,12 +98,11 @@ const TablaGuardias = () => {
           <button className="btn-excel" onClick={exportarExcel} title="Descargar Excel">
             <Download size={18} /> Excel
           </button>
-          {/* El botón PDF general ha sido eliminado según tu requerimiento */}
         </div>
       </div>
 
       <div className="filter-tabs">
-        {['todos', 'nivel_i', 'reentrenamiento', 'nivel_ii', 'nivel_iii'].map((nivel) => (
+        {['todos', 'nivel_i', 'reentrenamiento', 'nivel_ii', 'nivel_iii'].map(nivel => (
           <button
             key={nivel}
             className={`tab-button ${filtroNivel === nivel ? 'active' : ''}`}
@@ -110,40 +130,46 @@ const TablaGuardias = () => {
                 <td>{g.cedula}</td>
                 <td style={{ fontWeight: '600' }}>{g.apellidos_nombres}</td>
                 <td className="text-center">
-                  {g.fecha_inscripcion ? new Date(g.fecha_inscripcion).toLocaleDateString('es-EC') : '—'}
+                  {g.fecha_inscripcion
+                    ? new Date(g.fecha_inscripcion).toLocaleDateString('es-EC')
+                    : '—'}
                 </td>
                 <td className={`text-center ${Number(g.saldo) > 0 ? 'saldo-rojo' : 'saldo-cero'}`}>
                   ${Number(g.saldo).toFixed(2)}
                 </td>
                 <td className="actions-cell text-center">
-                  {/* ESTE ES EL BOTÓN AZUL QUE AHORA SÍ DESCARGA EL PDF */}
-                  <button 
-                    className="btn-icon-blue-flat" 
-                    onClick={() => imprimirFichaInscripcion(g)} 
+
+                  <button
+                    className="btn-icon-blue-flat"
+                    onClick={() => imprimirFichaInscripcion(g)}
                     title="Imprimir Ficha PDF"
                   >
                     <FileText size={18} />
                   </button>
-                  <button 
-                    className="btn-icon orange-flat" 
+
+                  <button
+                    className="btn-icon orange-flat"
                     onClick={() => navigate(`/admin/registro/${g.id}`)}
                     title="Editar Registro"
                   >
                     <Edit size={18} />
                   </button>
-                  <button 
-                    className="btn-icon red-flat" 
+
+                  <button
+                    className="btn-icon red-flat"
                     onClick={() => eliminar(g.id, g.apellidos_nombres)}
                     title="Eliminar Registro"
                   >
                     <Trash2 size={18} />
                   </button>
+
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
     </div>
   );
 };
