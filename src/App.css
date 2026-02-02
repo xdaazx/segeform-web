@@ -1287,3 +1287,166 @@ select {
     grid-column: span 1;
   }
 }
+/* Contenedor Principal con fondo gris claro */
+.form-registro-container {
+  padding: 40px 20px;
+  background-color: #f0f2f5;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+}
+
+/* Tarjeta blanca del formulario */
+.form-card {
+  background: white;
+  width: 100%;
+  max-width: 1100px;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  border-top: 6px solid #4b5320; /* Verde Militar */
+}
+
+/* Título con línea dorada a la izquierda */
+.form-title {
+  color: #4b5320;
+  margin-bottom: 30px;
+  font-weight: 800;
+  text-transform: uppercase;
+  border-left: 6px solid #b8860b; /* Dorado */
+  padding-left: 15px;
+  font-size: 1.5rem;
+}
+
+/* Secciones: Encabezados verde militar */
+.form-section {
+  margin-bottom: 30px;
+}
+
+.form-section-header {
+  background-color: #4b5320;
+  color: white;
+  padding: 10px 15px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  letter-spacing: 1px;
+}
+
+/* Grillas de diseño dinámicas */
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+/* Estilo de Inputs */
+.form-card input[type="text"],
+.form-card input[type="number"],
+.form-card input[type="email"],
+.form-card select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.form-card input:focus {
+  outline: none;
+  border-color: #b8860b;
+  box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.2);
+}
+
+/* Checkboxes alineados */
+.checkbox-group-row {
+  display: flex;
+  gap: 25px;
+  padding: 10px 5px;
+  flex-wrap: wrap;
+}
+
+.checkbox-group-row label, .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+}
+
+/* Campo que ocupa 2 columnas (Dirección) */
+.span-2 {
+  grid-column: span 2;
+}
+
+/* Banner de Saldos con borde punteado rojo */
+.saldo-banner-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #fff5f5;
+  border: 2px dashed #dc2626; /* Rojo punteado */
+  padding: 20px;
+  margin: 30px 0;
+  border-radius: 8px;
+}
+
+.total-label-red {
+  color: #991b1b;
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.saldo-monto-big {
+  color: #4b5320;
+  font-weight: 800;
+  font-size: 1.3rem;
+}
+
+/* Botón Principal Guardar */
+.btn-guardar-principal {
+  width: 100%;
+  background-color: #4b5320;
+  color: white;
+  padding: 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: transform 0.2s, background 0.3s;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+.btn-guardar-principal:hover {
+  background-color: #384018;
+  transform: translateY(-2px);
+}
+
+/* Adaptación para dispositivos móviles */
+@media (max-width: 768px) {
+  .form-grid-3, .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .span-2 {
+    grid-column: span 1;
+  }
+  .form-card {
+    padding: 20px;
+  }
+  .saldo-banner-container {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

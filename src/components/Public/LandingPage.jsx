@@ -15,7 +15,15 @@ const LandingPage = () => {
     <div className="landing-wrapper">
       {/* NAVBAR */}
       <nav className="navbar-segeform">
-        <div className="logo-text">SEGEFORM</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {/* ✅ LOGO EN NAVBAR */}
+          <img 
+            src="/logo_segeform.png" 
+            alt="Logo SEGEFORM" 
+            style={{ height: '40px', width: 'auto' }} 
+          />
+          <div className="logo-text">SEGEFORM</div>
+        </div>
         <button onClick={() => navigate('/login')} className="btn-gold-admin">
           ACCESO ADMIN
         </button>
@@ -23,6 +31,12 @@ const LandingPage = () => {
 
       {/* HERO SECTION */}
       <header className="hero">
+        {/* ✅ LOGO COMO INSIGNIA EN HERO */}
+        <img 
+          src="/logo_segeform.png" 
+          alt="Insignia" 
+          style={{ height: '100px', marginBottom: '20px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.3))' }} 
+        />
         <h1>Centro <span>de Capacitación</span></h1>
         <p>"Formando la élite de la seguridad integral en el Ecuador"</p>
       </header>
@@ -87,9 +101,8 @@ const LandingPage = () => {
           <p>Machala, El Oro, Ecuador</p>
         </div>
         <div className="map-frame-wrapper">
-          {/* El marcador está centrado en la Cámara de Industrias de Machala */}
           <iframe 
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3979.8664!2d-79.9664!3d-3.2664!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x90330ecf96ad0913%3A0xd13d9599816b9321!2sC%C3%A1mara%20de%20Industrias%20de%20Machala!5e0!3m2!1ses!2sec!4v1710000000000!5m2!1ses!2sec" 
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3978.232334460515!2d-79.9657!3d-3.2688!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x90330e7025816911%3A0x6436e2d832a76f25!2zQ8OhbWFyYSBkZSBJbmR1c3RyaWFzIGRlIE1hY2hhbGE!5e0!3m2!1ses-419!2sec!4v1700000000000" 
             width="100%" height="350" style={{ border: 0, borderRadius: '20px' }} allowFullScreen="" loading="lazy">
           </iframe>
         </div>
