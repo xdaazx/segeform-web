@@ -12,13 +12,14 @@ export const exportarReportePagos = (listaGuardias) => {
       "CEDULA": g.cedula,
       "APELLIDOS Y NOMBRES": g.apellidos_nombres,
       "CORREO": g.correo_electronico || 'N/A',
-      "NIVEL": g.nivel_i ? "Nivel I" : (g.reentrenamiento ? "Reentrenamiento" : "Nivel II"),
+      "NIVEL": g.nivel_i ? "Nivel I" : (g.reentrenamiento ? "Reentrenamiento" : (g.nivel_ii ? "Nivel II" : "Nivel III")),
       "NUMERO DOCUMENTO": g.num_documento || 'S/N',
-      "COSTO TOTAL": abono1 + abono2 + saldo, // Calculado para el reporte
+      "COSTO TOTAL": abono1 + abono2 + saldo,
       "ABONO 1": abono1,
       "ABONO 2": abono2,
       "SALDO": saldo,
-      "FECHA INSC": g.fecha_inscripcion ? new Date(g.fecha_inscripcion).toLocaleDateString('es-ES') : 'N/A'
+      // ✅ CORRECCIÓN: Se usa fecha_registro que es el nombre real en tu base de datos
+      "FECHA INSC": g.fecha_registro ? new Date(g.fecha_registro).toLocaleDateString('es-EC') : 'N/A'
     };
   });
 

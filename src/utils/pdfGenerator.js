@@ -23,11 +23,11 @@ export const imprimirFichaInscripcion = async (data) => {
       cargarImagenLocal(escudoPath)
     ]);
 
-    // --- MARCA DE AGUA CENTRAL (Gota de agua) ---
+    // --- MARCA DE AGUA CENTRAL ---
     if (logoImg) {
-      doc.setGState(new doc.GState({ opacity: 0.06 })); // Opacidad muy baja para legibilidad
+      doc.setGState(new doc.GState({ opacity: 0.06 }));
       doc.addImage(logoImg, 'PNG', pageWidth / 2 - 50, 100, 100, 100);
-      doc.setGState(new doc.GState({ opacity: 1.0 })); // Resetear opacidad para el resto del texto
+      doc.setGState(new doc.GState({ opacity: 1.0 }));
     }
 
     // --- CABECERA ---
@@ -66,7 +66,6 @@ export const imprimirFichaInscripcion = async (data) => {
 
     y += 15;
 
-    // Función para campos con línea de escritura
     const drawField = (label, value, x, yPos, w) => {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(10);
@@ -105,18 +104,13 @@ export const imprimirFichaInscripcion = async (data) => {
     y += 10;
     drawField("DIRECION TRABAJO: ", data.direccion_trabajo, 20, y, 140);
 
-    // --- SECCIÓN LIBRETA MILITAR (SI / NO) ---
     doc.setFont("helvetica", "bold");
     doc.text("LIBRETA MILITAR:", 145, y);
-    
     doc.setFontSize(9);
     doc.text("SI", 178, y);
-    doc.rect(182, y - 4, 6, 5); 
-    if(data.libreta_militar) doc.text("X", 183.5, y); 
-    
+    doc.rect(182, y - 4, 6, 5); if(data.libreta_militar) doc.text("X", 183.5, y); 
     doc.text("NO", 190, y);
-    doc.rect(195, y - 4, 6, 5); 
-    if(!data.libreta_militar) doc.text("X", 196.5, y); 
+    doc.rect(195, y - 4, 6, 5); if(!data.libreta_militar) doc.text("X", 196.5, y); 
     
     y += 10;
     drawField("DIRECION DOMICILIO: ", data.direccion_domicilio, 20, y, 190);
@@ -125,7 +119,6 @@ export const imprimirFichaInscripcion = async (data) => {
     drawField("CANTON: ", data.canton, 80, y, 130);
     drawField("CIUDAD: ", data.ciudad, 140, y, 190);
 
-    // --- SECCIÓN DE PAGOS ---
     y += 15;
     doc.setFillColor(245, 245, 245);
     doc.rect(20, y, 170, 18, 'F');
@@ -136,7 +129,6 @@ export const imprimirFichaInscripcion = async (data) => {
     doc.text(`SALDO: $${Number(data.saldo || 0).toFixed(2)}`, 130, y + 10);
     doc.setTextColor(0);
 
-    // --- COMPROMISO DE INSCRIPCION ---
     y += 30;
     doc.setFontSize(9);
     doc.setFont("helvetica", "bold");
@@ -146,19 +138,22 @@ export const imprimirFichaInscripcion = async (data) => {
     const compromiso = "Una vez registrado y cancelado los valores del curso sea este parcial o total, me comprometo a asistir las 120 horas clases como determina la malla curricular y el decreto de Gobierno, renunciando al derecho de reclamo o devolucion del dinero si no cumpliere con lo establecido.";
     doc.text(doc.splitTextToSize(compromiso, 170), 20, y);
 
-    // --- LUGAR Y FECHA ---
+    // --- SECCIÓN CORREGIDA: FECHA DE REGISTRO ---
     y += 25;
-    const hoy = new Date();
-    const fechaActual = hoy.toLocaleDateString('es-EC', { day: 'numeric', month: 'long', year: 'numeric' });
-    doc.text(`LUGAR, MACHALA de ${fechaActual}`, 110, y);
+    // Si data.fecha_registro existe (viene de la DB), usar esa. Si no, usar la fecha actual.
+    const fechaOrigen = data.fecha_registro ? new Date(data.fecha_registro) : new Date();
+    const fechaFormateada = fechaOrigen.toLocaleDateString('es-EC', { 
+      day: 'numeric', 
+      month: 'long', 
+      year: 'numeric' 
+    });
+    doc.text(`LUGAR, MACHALA de ${fechaFormateada}`, 110, y);
 
-    // --- FIRMA ---
     y += 30;
     doc.line(70, y, 140, y);
     doc.setFont("helvetica", "bold");
     doc.text("Firma del Estudiante", pageWidth / 2, y + 5, { align: "center" });
 
-    // Footer
     doc.setFontSize(8);
     doc.setTextColor(100, 100, 100);
     const footer = "DIRECCION: AV. LAS PALMERAS 2101 Y 13VA. SUR - TELF. 072961702 - 0981417535\nMACHALA - EL ORO - ECUADOR";
