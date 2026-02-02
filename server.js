@@ -11,26 +11,20 @@ app.use(cors());
 app.use(express.json());
 
 /* ============================
-   CONEXIÓN A POSTGRES (SUPABASE)
+    CONEXIÓN A POSTGRES (SUPABASE)
 ============================ */
 const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('supabase.co');
 
 const pool = new Pool({
-  // Prioriza la URL completa (Ideal para Vercel/Supabase)
   connectionString: process.env.DATABASE_URL,
-  
-  // Si no hay DATABASE_URL, usa los parámetros individuales (Para desarrollo local)
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
   database: process.env.DB_NAME,
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT || '5432', 10),
-
-  // Configuración de Seguridad Obligatoria para Supabase
   ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
-// Confirmación de conexión con log detallado
 pool.connect((err, client, release) => {
   if (err) {
     return console.error('🔴 Error de conexión a la base de datos:', err.stack);
@@ -40,7 +34,7 @@ pool.connect((err, client, release) => {
 });
   
 /* ============================
-   OBTENER GUARDIAS
+    OBTENER GUARDIAS
 ============================ */
 app.get('/api/guardias', async (req, res) => {
   try {
@@ -55,21 +49,18 @@ app.get('/api/guardias', async (req, res) => {
 });
 
 /* ============================
-   OBTENER FICHA POR ID
+    OBTENER FICHA POR ID
 ============================ */
 app.get('/api/guardias/:id', async (req, res) => {
   const { id } = req.params;
-
   try {
     const result = await pool.query(
       'SELECT * FROM ficha_inscripcion WHERE id = $1',
       [id]
     );
-
     if (result.rows.length === 0) {
       return res.status(404).json({ success: false, message: 'No encontrado' });
     }
-
     res.json(result.rows[0]);
   } catch (err) {
     console.error('❌ ERROR GET ID:', err.message);
@@ -77,13 +68,11 @@ app.get('/api/guardias/:id', async (req, res) => {
   }
 });
 
-
 /* ============================
-   GUARDAR NUEVA FICHA
+    GUARDAR NUEVA FICHA
 ============================ */
 app.post('/api/registro', async (req, res) => {
   const d = req.body;
-
   try {
     const query = `
       INSERT INTO ficha_inscripcion (
@@ -102,36 +91,15 @@ app.post('/api/registro', async (req, res) => {
     `;
 
     const values = [
-      d.cedula,
-      d.apellidos_nombres,
-      parseInt(d.edad) || null,
-      d.tipo_sangre,
-      d.correo_electronico,
-      d.nivel_i || false,
-      d.reentrenamiento || false,
-      d.nivel_ii || false,
-      d.nivel_iii || false,
-      d.nivel_academico,
-      d.lugar_trabajo,
-      d.direccion_trabajo,
-      d.libreta_militar || false,
-      d.telf_convencional,
-      d.celular,
-      d.telf_familiar,
-      d.parentesco,
-      d.direccion_domicilio,
-      d.provincia,
-      d.canton,
-      d.ciudad,
-      d.num_documento,
-      parseFloat(d.abono_1) || 0,
-      parseFloat(d.abono_2) || 0,
-      parseFloat(d.saldo) || 0
+      d.cedula, d.apellidos_nombres, parseInt(d.edad) || null, d.tipo_sangre, d.correo_electronico,
+      d.nivel_i || false, d.reentrenamiento || false, d.nivel_ii || false, d.nivel_iii || false, d.nivel_academico,
+      d.lugar_trabajo, d.direccion_trabajo, d.libreta_militar || false, d.telf_convencional, d.celular,
+      d.telf_familiar, d.parentesco, d.direccion_domicilio, d.provincia, d.canton, d.ciudad,
+      d.num_documento, parseFloat(d.abono_1) || 0, parseFloat(d.abono_2) || 0, parseFloat(d.saldo) || 0
     ];
 
     const result = await pool.query(query, values);
     res.status(201).json({ success: true, data: result.rows[0] });
-
   } catch (err) {
     console.error('❌ ERROR GUARDAR:', err.message);
     res.status(500).json({ success: false, error: err.message });
@@ -139,12 +107,11 @@ app.post('/api/registro', async (req, res) => {
 });
 
 /* ============================
-   EDITAR FICHA COMPLETA (PUT)
+    EDITAR FICHA COMPLETA (PUT)
 ============================ */
 app.put('/api/guardias/:id', async (req, res) => {
   const { id } = req.params;
   const d = req.body;
-
   try {
     const query = `
       UPDATE ficha_inscripcion SET
@@ -176,25 +143,20 @@ app.put('/api/guardias/:id', async (req, res) => {
   }
 });
 
-
 /* ============================
-   ELIMINAR GUARDIA
+    ELIMINAR GUARDIA
 ============================ */
 app.delete('/api/guardias/:id', async (req, res) => {
   const { id } = req.params;
-
   try {
     const result = await pool.query(
       'DELETE FROM ficha_inscripcion WHERE id = $1',
       [id]
     );
-
     if (result.rowCount === 0) {
       return res.status(404).json({ success: false, message: 'No encontrado' });
     }
-
     res.json({ success: true, message: 'Registro eliminado correctamente' });
-
   } catch (err) {
     console.error('❌ ERROR ELIMINAR:', err.message);
     res.status(500).json({ success: false, error: err.message });
@@ -206,18 +168,7 @@ app.delete('/api/guardias/:id', async (req, res) => {
 ============================ */
 app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  // .trim() elimina espacios accidentales al inicio o final
-  const cleanEmail = email.trim();
-  const cleanPassword = password.trim();
 
-  const response = await fetch('/api/login', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: cleanEmail, password: cleanPassword })
-  });
   try {
     const result = await pool.query(
       'SELECT * FROM usuarios WHERE LOWER(correo_electronico) = LOWER($1)',
@@ -225,20 +176,14 @@ const handleSubmit = async (e) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: 'Credenciales incorrectas'
-      });
+      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
 
     const user = result.rows[0];
     const match = await bcrypt.compare(password, user.contrasena_hash);
 
     if (!match) {
-      return res.status(401).json({
-        success: false,
-        message: 'Credenciales incorrectas'
-      });
+      return res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
     }
 
     res.json({
@@ -253,9 +198,8 @@ const handleSubmit = async (e) => {
   }
 });
 
-
 /* ============================
-   SERVER
+    SERVER
 ============================ */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
