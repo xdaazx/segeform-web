@@ -11,7 +11,8 @@ const Login = ({ setAuth }) => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('http://localhost:5000/api/login', {
+      // ✅ CORRECCIÓN: Usamos ruta relativa para que Vercel la redirija al backend
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: email, password: password }) 
@@ -22,18 +23,14 @@ const Login = ({ setAuth }) => {
       if (response.ok && data.success) {
         alert(`Bienvenido, ${data.nombre}`); 
         localStorage.setItem('usuarioNombre', data.nombre);
-        
-        // 1. Cambiamos el estado de autenticación
         setAuth(true);
-        
-        // 2. CORRECCIÓN DE RUTA: Redirigimos a la sub-ruta 'pagos' 
-        // para que coincida con lo definido en App.jsx
         navigate('/admin/pagos'); 
       } else {
+        // Si sale "Credenciales incorrectas" es porque el usuario no existe en Supabase
         alert(data.message || "Credenciales incorrectas");
       }
     } catch (err) {
-      alert("No se pudo conectar con el servidor. Verifica que 'node server.js' esté activo.");
+      alert("Error de conexión. Asegúrate de que el backend esté desplegado en Vercel.");
     }
   };
 
@@ -55,7 +52,7 @@ const Login = ({ setAuth }) => {
             <User size={20} className="input-icon" />
             <input 
               type="email" 
-              placeholder="Correo electrónico" 
+              placeholder="admin@segeform.com" 
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required 
