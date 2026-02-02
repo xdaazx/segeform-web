@@ -11,21 +11,34 @@ app.use(cors());
 app.use(express.json());
 
 /* ============================
-   CONEXIÓN A POSTGRES
+   CONEXIÓN A POSTGRES (SUPABASE)
 ============================ */
+const isProduction = process.env.NODE_ENV === 'production' || process.env.DATABASE_URL?.includes('supabase.co');
+
 const pool = new Pool({
-  user: process.env.DB_USER || 'postgres',
-  host: process.env.DB_HOST || 'localhost',
-  database: process.env.DB_NAME || 'segeform_db',
-  password: process.env.DB_PASSWORD || 'tu_clave',
+  // Prioriza la URL completa (Ideal para Vercel/Supabase)
+  connectionString: process.env.DATABASE_URL,
+  
+  // Si no hay DATABASE_URL, usa los parámetros individuales (Para desarrollo local)
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT || '5432', 10),
+
+  // Configuración de Seguridad Obligatoria para Supabase
+  ssl: isProduction ? { rejectUnauthorized: false } : false
 });
 
-// Confirmación de conexión
-pool.query('SELECT current_database(), current_schema()')
-  .then(r => console.log('🟢 Conectado a:', r.rows[0]))
-  .catch(e => console.error('🔴 Error DB:', e.message));
-
+// Confirmación de conexión con log detallado
+pool.connect((err, client, release) => {
+  if (err) {
+    return console.error('🔴 Error de conexión a la base de datos:', err.stack);
+  }
+  console.log('🟢 Conexión exitosa a la base de datos de SEGEFORM');
+  release();
+});
+  
 /* ============================
    OBTENER GUARDIAS
 ============================ */

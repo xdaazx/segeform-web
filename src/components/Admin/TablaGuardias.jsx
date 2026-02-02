@@ -11,14 +11,15 @@ const TablaGuardias = () => {
   const [filtroNivel, setFiltroNivel] = useState('todos'); 
   const navigate = useNavigate();
 
-  // Función para cargar datos desde el servidor en Machala
+// Función para cargar datos desde el servidor (Ruta Relativa para Producción)
   const cargarDatos = useCallback(async () => {
     try {
-      const resp = await fetch('http://localhost:5000/api/guardias');
+      // Eliminamos 'http://localhost:5000' para que Vercel use su propia URL
+      const resp = await fetch('/api/guardias'); 
       const data = await resp.json();
       setGuardias(Array.isArray(data) ? data : []);
     } catch (err) {
-      console.error('Error al cargar datos', err);
+      console.error('Error al cargar datos desde la nube', err);
     }
   }, []);
 

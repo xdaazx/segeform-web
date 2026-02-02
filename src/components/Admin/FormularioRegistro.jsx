@@ -17,9 +17,10 @@ const FormularioRegistro = () => {
     num_documento: '', abono_1: 0, abono_2: 0
   });
 
-  useEffect(() => {
+useEffect(() => {
     if (esEdicion) {
-      fetch(`http://localhost:5000/api/guardias/${id}`)
+      // Usamos ruta relativa para que funcione en el dominio de Vercel
+      fetch(`/api/guardias/${id}`)
         .then(res => res.json())
         .then(data => {
           setFormData({
@@ -33,7 +34,7 @@ const FormularioRegistro = () => {
             abono_2: Number(data.abono_2) || 0
           });
         })
-        .catch(err => console.error("Error al cargar:", err));
+        .catch(err => console.error("Error al cargar desde la nube:", err));
     }
   }, [id, esEdicion]);
 
