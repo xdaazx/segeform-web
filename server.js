@@ -211,6 +211,84 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+/* =========================================
+   GESTIÓN DE ADMINISTRADORES (CRUD)
+   ========================================= */
+
+// 1. Obtener todos los administradores
+app.get('/api/admins', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT id, nombre_usuario, correo_electronico, rol FROM usuarios ORDER BY id ASC'
+    );
+    res.json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener administradores' });
+  }
+});
+
+// 2. Registrar nuevo administrador
+app.post('/api/admins', async (req, res) => {
+  const { nombre, email, password } = req.body;
+  try {
+    // Encriptamos la contraseña antes de guardar
+    const salt = await bcrypt.genSalt(10);
+    const hashedPass = await bcrypt.hash(password.trim(), salt);
+
+    const query = `
+      INSERT INTO usuarios (nombre_usuario, correo_electronico, contrasena_hash, rol)
+      VALUES ($1, $2, $3, 'admin') RETURNING id, nombre_usuario;
+    `;
+    const result = await pool.query(query, [nombre, email, hashedPass]);
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'El correo ya existe o hubo un error en la DB' });
+  }
+});
+
+// 3. Actualizar administrador (Nombre y/o Contraseña)
+app.put('/api/admins/:id', async (req, res) => {
+  const { id } = req.params;
+  const { nombre, email, password } = req.body;
+  try {
+    let query;
+    let values;
+
+    if (password && password.trim() !== "") {
+      // Si el admin escribió una nueva clave, la encriptamos
+      const salt = await bcrypt.genSalt(10);
+      const hashedPass = await bcrypt.hash(password.trim(), salt);
+      query = `UPDATE usuarios SET nombre_usuario=$1, correo_electronico=$2, contrasena_hash=$3 WHERE id=$4`;
+      values = [nombre, email, hashedPass, id];
+    } else {
+      // Si no escribió clave, solo actualizamos datos básicos
+      query = `UPDATE usuarios SET nombre_usuario=$1, correo_electronico=$2 WHERE id=$3`;
+      values = [nombre, email, id];
+    }
+
+    await pool.query(query, values);
+    res.json({ success: true, message: 'Administrador actualizado' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al actualizar' });
+  }
+});
+
+// 4. Eliminar administrador
+app.delete('/api/admins/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    // Evitamos que se borre el ID 1 por seguridad
+    if (id === '1') return res.status(403).json({ error: 'No se puede eliminar al root' });
+    
+    await pool.query('DELETE FROM usuarios WHERE id = $1', [id]);
+    res.json({ success: true, message: 'Acceso revocado' });
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar' });
+  }
+});
+
+
 /* ============================
     SERVER
 ============================ */
