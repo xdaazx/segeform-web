@@ -3,7 +3,7 @@ import express from 'express';
 import pkg from 'pg';
 const { Pool } = pkg;
 import cors from 'cors';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import 'dotenv/config';
 
 const app = express();
@@ -240,3 +240,5 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
   console.log(`🚀 Servidor SEGEFORM activo en puerto ${PORT}`)
 );
+
+export default app;
